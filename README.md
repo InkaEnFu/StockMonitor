@@ -50,28 +50,28 @@ NFR5: Program musí být snadno konfigurovatelný.
 
 **2. Architektura aplikace**
 
-Aplikace je založena na producer–consumer architektuře s více konzumenty a jedním loggerem.
+      Aplikace je založena na producer–consumer architektuře s více konzumenty a jedním loggerem.
 
-                ┌───────────────────────┐
-                │    PriceProducer      │
-                │  (yfinance API fetch) │
-                └──────────┬────────────┘
-                           │
-                           ▼
-                     work_queue
-                           │
-       ┌───────────────────┴─────────────────────┐
-       │                                         │
-       ▼                                         ▼
-PortfolioConsumer                        AlertConsumer
-(počítá hodnotu)                       (hlídá limity)
-       │                                         │
-       └───────────────────┬─────────────────────┘
-                           ▼
-                       log_queue
-                           │
-                           ▼
-                     LoggerThread
+                  ┌───────────────────────┐
+                  │    PriceProducer      │
+                  │  (yfinance API fetch) │
+                  └──────────┬────────────┘
+                              │
+                              ▼
+                        work_queue
+                              │
+            ┌───────────────────┴─────────────────────┐
+            │                                         │
+            ▼                                         ▼
+      PortfolioConsumer                        AlertConsumer
+      (počítá hodnotu)                       (hlídá limity)
+            │                                         │
+            └───────────────────┬─────────────────────┘
+                              ▼
+                        log_queue
+                              │
+                              ▼
+                        LoggerThread
 
 **3. Popis tříd (Class Diagram – textová forma)**
 
