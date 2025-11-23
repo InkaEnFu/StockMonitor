@@ -1,5 +1,6 @@
 Multithread Finanční Monitor s Real-Time API
-Autor: Matyáš Prokop — inkaenfu69@gmail.com
+
+Autor: Matyáš Prokop 
 
 Stručně:
 Monitoruje ceny AAPL/TSLA, počítá hodnotu portfolia a posílá alerty.
