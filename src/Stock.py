@@ -55,7 +55,7 @@ class PriceProducer(threading.Thread):
                     self.log_queue.put(f"[API] {symbol} = {price}")
 
             except Exception as e:
-                self.log_queue.put(f"CHYBA yfinance: {e}")
+                self.log_queue.put(f"yfinance ERROR: {e}")
 
             time.sleep(2)
 
@@ -80,7 +80,7 @@ class PortfolioConsumer(threading.Thread):
                 self.shared.portfolio_value = round(total, 2)
 
             self.log_queue.put(
-                f"Portfolio update: {symbol}={price}, celková hodnota = {self.shared.portfolio_value}"
+                f"Portfolio update: {symbol}={price}, total value = {self.shared.portfolio_value}"
             )
             self.work_queue.task_done()
 
@@ -100,7 +100,7 @@ class AlertConsumer(threading.Thread):
                         price = self.shared.prices[symbol]
                         if price > limit:
                             self.log_queue.put(
-                                f"ALERT: {symbol} překročil limit {limit}! Cena={price}"
+                                f"ALERT: {symbol} exceeded limit {limit}! Current price ={price}"
                             )
             time.sleep(1)
 
@@ -126,12 +126,12 @@ def main():
         while True:
             time.sleep(3)
             with shared_state.lock:
-                print("Ceny:", shared_state.prices)
-                print("Portfolio hodnota:", shared_state.portfolio_value)
+                print("Prices:", shared_state.prices)
+                print("Portfolio value:", shared_state.portfolio_value)
                 print("---")
     except KeyboardInterrupt:
         stop_event.set()
-        print("Zastavuji...")
+        print("Stopping...")
 
 
 if __name__ == "__main__":

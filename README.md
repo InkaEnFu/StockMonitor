@@ -1,19 +1,22 @@
-Multithread Finanční Monitor s Real-Time API
+Multithread Financial Monitor with Real-Time API
 
-Autor: Matyáš Prokop 
+Author: Matyáš Prokop
 
-Stručně:
-Monitoruje ceny AAPL/TSLA, počítá hodnotu portfolia a posílá alerty.
+Summary:
+Monitors prices of AAPL/TSLA, calculates portfolio value, and sends alerts.
 
-Požadavky:
-- Python 3.10+
+Requirements:
 
-Instalace:
+Python 3.10+
+
+Installation:
+
 pip install -r requirements.txt
 
-Spuštění:
+
+Run:
+
 python Stock.py
 
-Podrobnější dokumentace a specifikace (BR/FR/NFR, testy) jsou v souboru dokumentace.md.
+Detailed documentation and specifications (BR/FR/NFR, tests) are available in the file DOCUMENTATION_EN.md.
 
-Kontakt: inkaenfu69@gmail.com
