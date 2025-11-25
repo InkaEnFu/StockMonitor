@@ -39,7 +39,7 @@ BR7: The application must be realistically usable as part of an investment monit
 
 **Functional Requirements (FR)**
 
-FR1: The application must periodically download real stock prices for AAPL and TSLA.
+FR1: The application must periodically download real stock prices for selected stock
 FR2: The application must store current prices in shared state.
 FR3: The application must calculate the real-time portfolio value.
 FR4: The application must evaluate alerts (price > limit).
@@ -187,15 +187,8 @@ Project: school assignment
 
 **7. Application Configuration**
 
-Default configuration in SharedState:
-
-portfolio = {"AAPL": 10, "TSLA": 5}
-alerts = {"AAPL": 150, "TSLA": 180}
-
-
 Default configuration in PriceProducer:
 
-self.symbols = ["AAPL", "TSLA"]
 interval = 2s (configurable)
 period = 1d (when using historical data)
 
@@ -239,13 +232,16 @@ Requirements:
 
 Python 3.10+
 
-Install dependencies:
-
-Terminal:
+Installation:
 
 pip install -r requirements.txt
 
+Fill your portfolio with stocks and its values, set alerts and symbols:
 
-Run the application:
+self.portfolio = {} -> self.portfolio = {"AAPL": 10, "TSLA": 5}
+self.alerts = {} -> self.alerts = {"AAPL": 150, "TSLA": 180}
+self.symbols = [] -> self.symbols = ["AAPL", "TSLA"]
 
-python Stock.py
+Run:
+
+python Stock.py or py Stock.py
