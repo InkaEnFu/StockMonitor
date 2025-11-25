@@ -13,6 +13,11 @@ Installation:
 
 pip install -r requirements.txt
 
+Fill your portfolio with stocks and its values, set alerts and symbols:
+
+self.portfolio = {} -> self.portfolio = {"AAPL": 10, "TSLA": 5}
+self.alerts = {} -> self.alerts = {"AAPL": 150, "TSLA": 180}
+self.symbols = [] -> self.symbols = ["AAPL", "TSLA"]
 
 Run:
 
