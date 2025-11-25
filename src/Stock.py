@@ -7,9 +7,9 @@ import yfinance as yf
 class SharedState:
     def __init__(self):
         self.prices = {}
-        self.portfolio = {"AAPL": 10, "TSLA": 5}
+        self.portfolio = {}
         self.portfolio_value = 0.0
-        self.alerts = {"AAPL": 150, "TSLA": 180}
+        self.alerts = {}
         self.lock = threading.Lock()
 
 
@@ -34,7 +34,7 @@ class PriceProducer(threading.Thread):
         self.work_queue = work_queue
         self.log_queue = log_queue
         self.stop_event = stop_event
-        self.symbols = ["AAPL", "TSLA"]
+        self.symbols = []
 
     def run(self):
         while not self.stop_event.is_set():

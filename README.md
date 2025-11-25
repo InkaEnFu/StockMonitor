@@ -3,7 +3,7 @@ Multithread Financial Monitor with Real-Time API
 Author: Matyáš Prokop
 
 Summary:
-Monitors prices of AAPL/TSLA, calculates portfolio value, and sends alerts.
+Monitors prices of selected stocks, calculates portfolio value, and sends alerts.
 
 Requirements:
 
