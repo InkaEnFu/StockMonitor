@@ -221,7 +221,7 @@ Modifiable Parameters:
 
 Performed tests:
 
-Test 1: API access — yfinance returns data; on failure, an error is logged and service continues.
+Test 1: Value Calculation - This test simulates the core functionality of the PortfolioConsumer by verifying that stock prices received from the work queue are correctly stored in the shared state and that the total portfolio value is accurately recalculated after processing all updates.
 
 Test 2: Shared state synchronization — verified no race conditions when using threading.Lock.
 
