@@ -40,33 +40,44 @@ BR7: The application must be realistically usable as part of an investment monit
 **Functional Requirements (FR)**
 
 FR1: The application must periodically download real stock prices for AAPL and TSLA.
+
 FR2: The application must store current prices in shared state.
+
 FR3: The application must calculate the real-time portfolio value.
+
 FR4: The application must evaluate alerts (price > limit).
+
 FR5: The application must log all events.
+
 FR6: The program must run multithreaded and must not block the main thread.
+
 FR7: The program must continue running until the user terminates it.
 
 **Non-Functional Requirements (NFR)**
 
 NFR1: API requests must be stable and must not block threads (timeout, error handling).
+
 NFR2: Synchronization of shared data must be safe (thread-safe).
+
 NFR3: The system must be resilient to API failures.
+
 NFR4: Logging must not block the main execution flow.
+
 NFR5: The program must be easily configurable.
+
 
 **2. Application Architecture**
 
 The application is based on a producer–consumer architecture with multiple consumers and a single logger.
 
-                ┌───────────────────────┐
-                │    PriceProducer      │
-                │  (yfinance API fetch) │
-                └──────────┬────────────┘
-                              │
-                              ▼
-                        work_queue
-                              │
+                     ┌───────────────────────┐
+                     │    PriceProducer      │
+                     │  (yfinance API fetch) │
+                     └──────────┬────────────┘
+                                │
+                                ▼
+                            work_queue
+                                │
             ┌───────────────────┴─────────────────────┐
             │                                         │
             ▼                                         ▼
@@ -74,11 +85,11 @@ The application is based on a producer–consumer architecture with multiple con
       (calculates value)                      (monitors limits)
             │                                         │
             └───────────────────┬─────────────────────┘
-                              ▼
-                        log_queue
-                              │
-                              ▼
-                        LoggerThread
+                                ▼
+                            log_queue
+                                │
+                                ▼
+                          LoggerThread
 
 **3. Class Descriptions (Text-Based Class Diagram)**
 **SharedState**
@@ -187,28 +198,24 @@ Project: school assignment
 
 **7. Application Configuration**
 
-Default configuration in SharedState:
+The application is configured by modifying constants defined in the primary execution file, main.py. The core logic classes receive these values during initialization.
 
-portfolio = {"AAPL": 10, "TSLA": 5}
-alerts = {"AAPL": 150, "TSLA": 180}
+Configuration Variables (Defined in main.py):
+You must set the values for these constants before running:
 
+PORTFOLIO_CONFIG(Portfolio holdings):
 
-Default configuration in PriceProducer:
+    PORTFOLIO_CONFIG = {"AAPL": 10, "TSLA": 5}
 
-self.symbols = ["AAPL", "TSLA"]
-interval = 2s (configurable)
-period = 1d (when using historical data)
+ALERT_CONFIG(Alert limits):
 
+    ALERT_CONFIG = {"AAPL": 150, "TSLA": 180}
 
-The user may modify:
+Modifiable Parameters:
 
-portfolio
+      Portfolio holdings and quantities.
 
-alert limits
-
-tracked stocks
-
-data refresh frequency
+      Alert limits.
 
 **8. Testing and Validation**
 
