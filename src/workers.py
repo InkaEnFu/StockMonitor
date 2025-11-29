@@ -2,16 +2,7 @@ import threading
 import time
 import queue
 import yfinance as yf
-
-
-class SharedState:
-    def __init__(self):
-        self.prices = {}
-        self.portfolio = {}
-        self.portfolio_value = 0.0
-        self.alerts = {}
-        self.lock = threading.Lock()
-
+from src.shared_state import SharedState
 
 class LoggerThread(threading.Thread):
     def __init__(self, log_queue, stop_event):
@@ -29,18 +20,24 @@ class LoggerThread(threading.Thread):
 
 
 class PriceProducer(threading.Thread):
-    def __init__(self, work_queue, log_queue, stop_event):
+    def __init__(self, shared_state, work_queue, log_queue, stop_event):
         super().__init__(daemon=True)
+        self.shared = shared_state
         self.work_queue = work_queue
         self.log_queue = log_queue
         self.stop_event = stop_event
-        self.symbols = []
 
     def run(self):
         while not self.stop_event.is_set():
             try:
+                symbols = self.shared.symbols 
+                if not symbols:
+                    self.log_queue.put("Producer ERROR: No symbols defined.")
+                    time.sleep(5)
+                    continue
+                
                 data = yf.download(
-                    tickers=" ".join(self.symbols),
+                    tickers=" ".join(symbols),
                     period="1d",
                     interval="1m",
                     progress=False,
@@ -49,7 +46,7 @@ class PriceProducer(threading.Thread):
 
                 last_row = data.tail(1)
 
-                for symbol in self.symbols:
+                for symbol in symbols:
                     price = float(last_row["Close"][symbol].iloc[0])
                     self.work_queue.put((symbol, price))
                     self.log_queue.put(f"[API] {symbol} = {price}")
@@ -103,36 +100,3 @@ class AlertConsumer(threading.Thread):
                                 f"ALERT: {symbol} exceeded limit {limit}! Current price ={price}"
                             )
             time.sleep(1)
-
-
-def main():
-    stop_event = threading.Event()
-    shared_state = SharedState()
-
-    price_queue = queue.Queue()
-    log_queue = queue.Queue()
-
-    logger_thread = LoggerThread(log_queue, stop_event)
-    producer = PriceProducer(price_queue, log_queue, stop_event)
-    portfolio_consumer = PortfolioConsumer(shared_state, price_queue, log_queue, stop_event)
-    alert_consumer = AlertConsumer(shared_state, log_queue, stop_event)
-
-    logger_thread.start()
-    producer.start()
-    portfolio_consumer.start()
-    alert_consumer.start()
-
-    try:
-        while True:
-            time.sleep(3)
-            with shared_state.lock:
-                print("Prices:", shared_state.prices)
-                print("Portfolio value:", shared_state.portfolio_value)
-                print("---")
-    except KeyboardInterrupt:
-        stop_event.set()
-        print("Stopping...")
-
-
-if __name__ == "__main__":
-    main()
