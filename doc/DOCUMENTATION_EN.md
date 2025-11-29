@@ -221,13 +221,21 @@ Modifiable Parameters:
 
 Performed tests:
 
-Test 1: Value Calculation - This test simulates the core functionality of the PortfolioConsumer by verifying that stock prices received from the work queue are correctly stored in the shared state and that the total portfolio value is accurately recalculated after processing all updates.
+Test 1 – test_portfolio_value_update.py – Verifies portfolio recalculation
 
-Test 2: Shared state synchronization — verified no race conditions when using threading.Lock.
+This test checks that after two manual price updates, the correct stock prices are stored and the final portfolio value is computed accurately.
 
-Test 3: Alerts — alerts are generated when limits are exceeded.
+Test 2 – test_alert_creation.py – Verifies alert generation
 
-Test 4: Thread termination — application responds to Ctrl+C/SIGINT and safely stops daemon threads.
+This test simulates a price that exceeds the alert threshold and checks that an alert message is correctly logged.
+
+Test 3 – test_log_error.py – Verifies producer error handling
+
+This test runs the PriceProducer without any symbols and verifies that it logs the expected “No symbols defined” error.
+
+Test 4 – test_price_calculation.py – Verifies multi-price updates
+
+This test ensures that the PortfolioConsumer correctly updates multiple stock prices and recalculates the portfolio value accordingly.
 
 **9. Version List and Known Bugs**
 
