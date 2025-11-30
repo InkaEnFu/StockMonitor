@@ -39,7 +39,7 @@ BR7: The application must be realistically usable as part of an investment monit
 
 **Functional Requirements (FR)**
 
-FR1: The application must periodically download real stock prices for AAPL and TSLA.
+FR1: The application must periodically download real stock prices for all tickers entered by the user at startup.
 
 FR2: The application must store current prices in shared state.
 
@@ -70,26 +70,50 @@ NFR5: The program must be easily configurable.
 
 The application is based on a producer–consumer architecture with multiple consumers and a single logger.
 
-                     ┌───────────────────────┐
-                     │    PriceProducer      │
-                     │  (yfinance API fetch) │
-                     └──────────┬────────────┘
+                   ┌───────────────────────┐
+                   │     user_input.py     │
+                   │ (collects tickers,    │
+                   │  shares, alerts,      │
+                   │  validates symbols)   │
+                   └──────────┬────────────┘
+                              │
+                              ▼
+                     ┌──────────────────┐
+                     │   TradeEngine    │
+                     │ (initializes     │
+                     │  threads + state)│
+                     └─────────┬────────┘
+                               │
+                               ▼
+                        ┌────────────┐
+                        │SharedState │
+                        └─────┬──────┘
+                              │
+                              ▼
+                     ┌──────────────────────┐
+                     │    PriceProducer     │
+                     │ (yfinance API fetch) │
+                     └──────────┬───────────┘
                                 │
                                 ▼
-                            work_queue
+                             work_queue
                                 │
-            ┌───────────────────┴─────────────────────┐
-            │                                         │
-            ▼                                         ▼
-      PortfolioConsumer                        AlertConsumer
-      (calculates value)                      (monitors limits)
-            │                                         │
-            └───────────────────┬─────────────────────┘
-                                ▼
-                            log_queue
-                                │
-                                ▼
-                          LoggerThread
+        ┌───────────────────────┴────────────────────────┐
+        │                                                │
+        ▼                                                ▼
+┌──────────────────┐                           ┌───────────────────┐
+│ PortfolioConsumer│                           │  AlertConsumer    │
+│ (calculates      │                           │ (monitors limits) │
+│  portfolio value)│                           └───────────────────┘
+└──────────┬───────┘
+           │
+           ▼
+       log_queue
+           │
+           ▼
+   ┌────────────────┐
+   │  LoggerThread  │
+   └────────────────┘
 
 **3. Class Descriptions (Text-Based Class Diagram)**
 **SharedState**
@@ -118,58 +142,109 @@ Processes prices from the work queue, locks shared state during updates, recalcu
 
 Periodically reads shared state under a lock, checks defined alert limits, and sends alerts to log_queue when exceeded.
 
+**TradeEngine**
+
+Coordinates the entire system, initializes all queues, threads, and shared state, and starts/stops the worker threads.
+
+**User_input.py**
+
+Handles user interaction before the engine starts.
+
+
 **4. Behavioral Model (Activity Diagram – Text Form)**
+**User Input Phase**
+
+Before the threaded system starts, the application performs an interactive input phase:
+
+Ask the user to enter stock tickers
+
+Validate ticker existence
+
+Ask for number of shares
+
+Ask whether an alert should be set (y/n)
+
+If yes, ask for the alert threshold
+
+Build portfolio, alerts, and symbols
+
+Pass all values into TradeEngine
+
+**TradeEngine** 
+
+The TradeEngine acts as the coordinator of the entire application:
+
+Creates SharedState
+
+Initializes internal queues (price_queue, log_queue)
+
+Creates all worker threads:
+
+LoggerThread
+
+PriceProducer
+
+PortfolioConsumer
+
+AlertConsumer
+
+Starts all threads in the correct order
+
+Runs the monitoring loop (run_monitor), which periodically displays prices and portfolio value
+
+Ensures the system remains active until termination
+
+The TradeEngine does not process business logic itself — it orchestrates the worker threads that perform the work.
+
 **PriceProducer**
 
-Wait according to interval (default 2s)
+Wait for a fixed interval (default 2 s)
 
-Call yfinance API (with timeout and error handling)
+Download the latest prices for all watched symbols
 
-Fetch stock prices
+Insert each price into work_queue
 
-For each symbol, insert price into work_queue
+Insert an informational message into log_queue
 
-Send informational entry to log_queue
-
-Repeat
+Repeat indefinitely
 
 **PortfolioConsumer**
 
-Wait for a new item from work_queue
+Wait for new data in work_queue
 
-Lock SharedState
+Acquire SharedState.lock
 
-Update price in prices
+Update prices
 
-Recalculate portfolio value
+Recalculate portfolio_value
 
-Unlock
+Release lock
 
-Send output to log_queue
+Log the updated value to log_queue
 
-Repeat
+Repeat indefinitely
 
 **AlertConsumer**
 
-Lock SharedState
+Acquire SharedState.lock
 
-For each symbol, compare value against alerts
+For each ticker with an alert, compare current price with threshold
 
-If price > limit → send alert to log_queue
+If the threshold is exceeded, write an alert message to log_queue
 
-Unlock
+Release lock
 
-Wait a short interval (e.g., 1s)
+Sleep briefly (default 1 s)
 
-Repeat
+Repeat indefinitely
 
 **LoggerThread**
 
-Wait for a message in log_queue
+Wait for messages in log_queue
 
-Print it (stdout or file) asynchronously
+Print them asynchronously
 
-Repeat
+Repeat indefinitely
 
 **5. Libraries and Interfaces Used**
 Python Standard Library
@@ -183,6 +258,8 @@ time
 Third-Party Libraries
 
 yfinance — wrapper for Yahoo Finance API
+
+pytest - for testing project
 
 API Services
 
@@ -198,24 +275,7 @@ Project: school assignment
 
 **7. Application Configuration**
 
-The application is configured by modifying constants defined in the primary execution file, main.py. The core logic classes receive these values during initialization.
-
-Configuration Variables (Defined in main.py):
-You must set the values for these constants before running:
-
-PORTFOLIO_CONFIG(Portfolio holdings):
-
-    PORTFOLIO_CONFIG = {"AAPL": 10, "TSLA": 5}
-
-ALERT_CONFIG(Alert limits):
-
-    ALERT_CONFIG = {"AAPL": 150, "TSLA": 180}
-
-Modifiable Parameters:
-
-      Portfolio holdings and quantities.
-
-      Alert limits.
+The application is configured dynamically through interactive console input before the monitoring engine starts. -> py main.py
 
 **8. Testing and Validation**
 
@@ -248,6 +308,15 @@ occasional API outages (network issues) — handled with retry/backoff
 
 API may return NaN values — handled in code (ignored/not overwriting values)
 
+Version 1.1 - 30 November 2025
+
+Added interactive console input for portfolio and alert configuration, introduced ticker validation, and refactored architecture
+
+Known bugs:
+
+Negative user input for prices 
+
+
 **10. Installation and Running the Application**
 
 Requirements:
@@ -264,3 +333,8 @@ pip install -r requirements.txt
 Run the application:
 
 python Stock.py
+
+Run the test:
+
+$env:PYTHONPATH="."
+pytest tests/
