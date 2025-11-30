@@ -68,52 +68,52 @@ NFR5: The program must be easily configurable.
 
 **2. Application Architecture**
 
-The application is based on a producer–consumer architecture with multiple consumers and a single logger.
+    The application is based on a producer–consumer architecture with multiple consumers and a single logger.
 
-                   ┌───────────────────────┐
-                   │     user_input.py     │
-                   │ (collects tickers,    │
-                   │  shares, alerts,      │
-                   │  validates symbols)   │
-                   └──────────┬────────────┘
-                              │
-                              ▼
-                     ┌──────────────────┐
-                     │   TradeEngine    │
-                     │ (initializes     │
-                     │  threads + state)│
-                     └─────────┬────────┘
-                               │
-                               ▼
-                        ┌────────────┐
-                        │SharedState │
-                        └─────┬──────┘
-                              │
-                              ▼
-                     ┌──────────────────────┐
-                     │    PriceProducer     │
-                     │ (yfinance API fetch) │
-                     └──────────┬───────────┘
-                                │
-                                ▼
-                             work_queue
-                                │
-        ┌───────────────────────┴────────────────────────┐
-        │                                                │
-        ▼                                                ▼
-┌──────────────────┐                           ┌───────────────────┐
-│ PortfolioConsumer│                           │  AlertConsumer    │
-│ (calculates      │                           │ (monitors limits) │
-│  portfolio value)│                           └───────────────────┘
-└──────────┬───────┘
-           │
-           ▼
-       log_queue
-           │
-           ▼
-   ┌────────────────┐
-   │  LoggerThread  │
-   └────────────────┘
+                            ┌───────────────────────┐
+                            │     user_input.py     │
+                            │ (collects tickers,    │
+                            │  shares, alerts,      │
+                            │  validates symbols)   │
+                            └──────────┬────────────┘
+                                       │
+                                       ▼
+                                ┌──────────────────┐
+                                │   TradeEngine    │
+                                │ (initializes     │
+                                │  threads + state)│
+                                └─────────┬────────┘
+                                          │
+                                          ▼
+                                    ┌────────────┐
+                                    │SharedState │
+                                    └─────┬──────┘
+                                          │
+                                          ▼
+                                ┌──────────────────────┐
+                                │    PriceProducer     │
+                                │ (yfinance API fetch) │
+                                └──────────┬───────────┘
+                                           │
+                                           ▼
+                                        work_queue
+                                            │
+                    ┌───────────────────────┴────────────────────────┐
+                    │                                                │
+                    ▼                                                ▼
+            ┌──────────────────┐                           ┌───────────────────┐
+            │ PortfolioConsumer│                           │  AlertConsumer    │
+            │ (calculates      │                           │ (monitors limits) │
+            │  portfolio value)│                           └───────────────────┘
+            └──────────┬───────┘
+                       │
+                       ▼
+                   log_queue
+                      │
+                      ▼
+                ┌────────────────┐
+                │  LoggerThread  │
+                └────────────────┘
 
 **3. Class Descriptions (Text-Based Class Diagram)**
 **SharedState**
